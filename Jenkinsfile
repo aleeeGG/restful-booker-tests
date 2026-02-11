@@ -8,57 +8,78 @@ pipeline {
 
     stages {
 
-        stage('Build Docker Image') {
+        stage('Сборка Docker образа') {
             steps {
                 sh 'docker build -t booking-tests .'
             }
         }
 
-        stage('Run Tests') {
+        stage('Запуск автотестов') {
             steps {
                 sh 'docker run --name booking-container booking-tests || true'
             }
         }
 
-        stage('Copy Reports') {
+        stage('Копирование отчетов') {
             steps {
                 sh 'docker cp booking-container:/app/target ./target || true'
             }
         }
 
-        stage('Parse Results') {
+        stage('Парсинг результатов') {
             steps {
                 script {
 
+                    // Общее количество тестов
                     TOTAL = sh(
-                        script: "grep -h 'Tests run:' target/surefire-reports/*.txt | awk '{sum+=\$3} END {print sum}'",
+                        script: """
+                        grep -h 'Tests run:' target/surefire-reports/*.txt \
+                        | awk -F',' '{sum+=\$1} END {print sum}' \
+                        | awk '{print \$3}'
+                        """,
                         returnStdout: true
                     ).trim()
 
+                    // Количество упавших
                     FAIL = sh(
-                        script: "grep -h 'Failures:' target/surefire-reports/*.txt | awk '{sum+=\$2} END {print sum}'",
+                        script: """
+                        grep -h 'Failures:' target/surefire-reports/*.txt \
+                        | awk -F',' '{sum+=\$2} END {print sum}' \
+                        | awk '{print \$2}'
+                        """,
                         returnStdout: true
                     ).trim()
 
+                    // Список упавших тестов
                     FAILED_TESTS = sh(
-                        script: "grep -R '<<< FAILURE!' target/surefire-reports | sed 's/.*reports\\///' | sed 's/.txt.*//' || true",
+                        script: """
+                        grep -R '<<< FAILURE!' target/surefire-reports \
+                        | sed 's/.*reports\\///' \
+                        | sed 's/.txt.*//' \
+                        | sort -u || true
+                        """,
                         returnStdout: true
                     ).trim()
+
+                    // Если нет упавших
+                    if (FAILED_TESTS == "") {
+                        FAILED_TESTS = "Нет упавших тестов 🎉"
+                    }
 
                     env.MESSAGE = """
-Autotests finished
+Результаты автотестов
 
-Total: ${TOTAL}
-Failed: ${FAIL}
+Всего тестов: ${TOTAL}
+Упало: ${FAIL}
 
-Failed tests:
+Упавшие тесты:
 ${FAILED_TESTS}
 """
                 }
             }
         }
 
-        stage('Send To Telegram') {
+        stage('Отправка в Telegram') {
             steps {
                 sh """
                 curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \

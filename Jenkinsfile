@@ -8,7 +8,7 @@ pipeline {
 
     stages {
 
-        stage('Сборка Docker образа') {
+        stage('Сборка Docker-образа') {
             steps {
                 sh 'docker build -t booking-tests .'
             }
@@ -26,34 +26,33 @@ pipeline {
             }
         }
 
-        stage('Парсинг результатов') {
+        stage('Анализ результатов') {
             steps {
                 script {
 
-                    // Общее количество тестов
                     TOTAL = sh(
                         script: """
-                        grep -h 'Tests run:' target/surefire-reports/*.txt \
-                        | awk -F',' '{sum+=\$1} END {print sum}' \
-                        | awk '{print \$3}'
+                        grep -h "Tests run:" target/surefire-reports/*.txt \
+                        | sed 's/.*Tests run: //' \
+                        | sed 's/,.*//' \
+                        | awk '{sum+=\$1} END {print sum}'
                         """,
                         returnStdout: true
                     ).trim()
 
-                    // Количество упавших
                     FAIL = sh(
                         script: """
-                        grep -h 'Failures:' target/surefire-reports/*.txt \
-                        | awk -F',' '{sum+=\$2} END {print sum}' \
-                        | awk '{print \$2}'
+                        grep -h "Failures:" target/surefire-reports/*.txt \
+                        | sed 's/.*Failures: //' \
+                        | sed 's/,.*//' \
+                        | awk '{sum+=\$1} END {print sum}'
                         """,
                         returnStdout: true
                     ).trim()
 
-                    // Список упавших тестов
                     FAILED_TESTS = sh(
                         script: """
-                        grep -R '<<< FAILURE!' target/surefire-reports \
+                        grep -R "<<< FAILURE!" target/surefire-reports \
                         | sed 's/.*reports\\///' \
                         | sed 's/.txt.*//' \
                         | sort -u || true
@@ -61,7 +60,6 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-                    // Если нет упавших
                     if (FAILED_TESTS == "") {
                         FAILED_TESTS = "Нет упавших тестов 🎉"
                     }
@@ -79,7 +77,7 @@ ${FAILED_TESTS}
             }
         }
 
-        stage('Отправка в Telegram') {
+        stage('Отправка отчета в Telegram') {
             steps {
                 sh """
                 curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \

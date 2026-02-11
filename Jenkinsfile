@@ -8,12 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/aleeeGG/restful-booker-tests.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t booking-tests .'

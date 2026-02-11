@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/ТВОЙ_ГИТ/RestfulBookerTesting.git'
+                git 'https://github.com/aleeeGG/restful-booker-tests.git'
             }
         }
 

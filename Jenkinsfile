@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        TELEGRAM_TOKEN = credentials('tg-bot-token')
+        TELEGRAM_CHAT  = credentials('tg-chat-id')
+    }
+
     stages {
 
         stage('Checkout') {
@@ -27,20 +32,45 @@ pipeline {
             }
         }
 
-        stage('Send Report To Telegram') {
+        stage('Parse Results') {
             steps {
-                sh '''
-                TOTAL=$(grep -o "Tests run: [0-9]*" target/surefire-reports/*.txt | head -1)
-                FAIL=$(grep -o "Failures: [0-9]*" target/surefire-reports/*.txt | head -1)
+                script {
 
-                FAILED_TESTS=$(grep -R "<<< FAILURE!" target/surefire-reports | sed 's/.*reports\\///' | sed 's/.txt.*//' )
+                    TOTAL = sh(
+                        script: "grep -h 'Tests run:' target/surefire-reports/*.txt | awk '{sum+=\$3} END {print sum}'",
+                        returnStdout: true
+                    ).trim()
 
-                MESSAGE="Autotests finished\n$TOTAL\n$FAIL\n\nFailed tests:\n$FAILED_TESTS"
+                    FAIL = sh(
+                        script: "grep -h 'Failures:' target/surefire-reports/*.txt | awk '{sum+=\$2} END {print sum}'",
+                        returnStdout: true
+                    ).trim()
 
-                curl -X POST https://api.telegram.org/bot<TOKEN>/sendMessage \
-                -d chat_id=<CHAT_ID> \
-                -d text="$MESSAGE"
-                '''
+                    FAILED_TESTS = sh(
+                        script: "grep -R '<<< FAILURE!' target/surefire-reports | sed 's/.*reports\\///' | sed 's/.txt.*//' || true",
+                        returnStdout: true
+                    ).trim()
+
+                    env.MESSAGE = """
+Autotests finished
+
+Total: ${TOTAL}
+Failed: ${FAIL}
+
+Failed tests:
+${FAILED_TESTS}
+"""
+                }
+            }
+        }
+
+        stage('Send To Telegram') {
+            steps {
+                sh """
+                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \
+                -d chat_id=${TELEGRAM_CHAT} \
+                -d text="${MESSAGE}"
+                """
             }
         }
     }

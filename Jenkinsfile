@@ -30,6 +30,7 @@ pipeline {
             steps {
                 script {
 
+                    // Общее количество тестов
                     TOTAL = sh(
                         script: """
                         grep -h "Tests run:" target/surefire-reports/*.txt \
@@ -40,6 +41,7 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
+                    // Количество упавших
                     FAIL = sh(
                         script: """
                         grep -h "Failures:" target/surefire-reports/*.txt \
@@ -50,16 +52,18 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
+                    // Список упавших тестов (методы)
                     FAILED_TESTS = sh(
                         script: """
                         grep -R "<<< FAILURE!" target/surefire-reports \
-                        | sed 's/.*reports\\///' \
-                        | sed 's/.txt.*//' \
+                        | awk -F'<<<' '{print \$1}' \
+                        | awk '{print \$1}' \
                         | sort -u || true
                         """,
                         returnStdout: true
                     ).trim()
 
+                    // Если всё зелёное
                     if (FAILED_TESTS == "") {
                         FAILED_TESTS = "Нет упавших тестов 🎉"
                     }

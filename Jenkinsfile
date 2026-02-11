@@ -52,18 +52,18 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-                    // Список упавших тестов (методы)
+                    // Список упавших тестов (только методы)
                     FAILED_TESTS = sh(
                         script: """
                         grep -R "<<< FAILURE!" target/surefire-reports \
-                        | awk -F'<<<' '{print \$1}' \
+                        | cut -d':' -f2 \
                         | awk '{print \$1}' \
+                        | sed 's/.*\\.//' \
                         | sort -u || true
                         """,
                         returnStdout: true
                     ).trim()
 
-                    // Если всё зелёное
                     if (FAILED_TESTS == "") {
                         FAILED_TESTS = "Нет упавших тестов 🎉"
                     }

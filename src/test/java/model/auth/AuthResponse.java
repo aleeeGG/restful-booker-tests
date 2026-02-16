@@ -1,6 +1,15 @@
 package model.auth;
 
 public class AuthResponse {
-    public String token;
-    public String reason;
+
+    private String token;
+    private String reason;
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getReason() {
+        return reason;
+    }
 }

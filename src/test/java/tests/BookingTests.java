@@ -30,15 +30,18 @@ public class BookingTests extends BaseTest {
         assertThat(response.body()).isNotNull();
         assertThat(response.body()).isNotEmpty();
         response.body().forEach(id ->
-                assertThat(id.bookingid).isPositive());
+                assertThat(id.getBookingid()).isPositive());
         assertThat(response.body())
-                .extracting(b -> b.bookingid)
+                .extracting(b -> b.getBookingid())
                 .doesNotHaveDuplicates();
     }
 
     @Test
     void getNameBookingIDs200() throws Exception {
+
+        BookingData BookingData = new BookingData();
         create(BookingData.defaultBooking());
+
 
         Response<List<GetBookingIDsResponse>> response =
                 getBookingListIds(
@@ -47,7 +50,7 @@ public class BookingTests extends BaseTest {
                         null,
                         null);
 
-        int id = response.body().get(0).bookingid;
+        int id = response.body().get(0).getBookingid();
 
         BookingResponse booking =
                 getBookingById(id);
@@ -55,7 +58,7 @@ public class BookingTests extends BaseTest {
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body()).isNotNull();
         assertThat(response.body()).isNotEmpty();
-        assertThat(booking.firstname).isEqualTo("Vlad");
+        assertThat(booking.getFirstname()).isEqualTo("Vlad");
     }
 
     @Test
@@ -74,7 +77,7 @@ public class BookingTests extends BaseTest {
 
     @Test
     void getFullBookingIDs200() throws Exception {
-
+        BookingData BookingData = new BookingData();
         create(BookingData.defaultBooking());
 
         Response<List<GetBookingIDsResponse>> response =
@@ -93,33 +96,35 @@ public class BookingTests extends BaseTest {
     @Test
     void createThenGet() throws Exception {
 
+        BookingData BookingData = new BookingData();
+
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
         BookingResponse booking =
-                getBookingById(created.bookingid);
+                getBookingById(created.getBookingid());
 
-        assertThat(booking.firstname)
-                .isEqualTo(created.booking.firstname);
+        assertThat(booking.getFirstname())
+                .isEqualTo(created.getBooking().getFirstname());
 
-        assertThat(booking.lastname)
-                .isEqualTo(created.booking.lastname);
+        assertThat(booking.getLastname())
+                .isEqualTo(created.getBooking().getLastname());
 
-        assertThat(booking.totalprice)
-                .isEqualTo(created.booking.totalprice);
+        assertThat(booking.getTotalprice())
+                .isEqualTo(created.getBooking().getTotalprice());
 
-        assertThat(booking.depositpaid)
-                .isEqualTo(created.booking.depositpaid);
+        assertThat(booking.getDepositpaid())
+                .isEqualTo(created.getBooking().getDepositpaid());
 
-        assertThat(booking.bookingdates.checkin)
-                .isEqualTo(created.booking.bookingdates.checkin);
+        assertThat(booking.getBookingdates().getCheckin())
+                .isEqualTo(created.getBooking().getBookingdates().getCheckin());
 
-        assertThat(booking.bookingdates.checkout)
-                .isEqualTo(created.booking.bookingdates.checkout);
+        assertThat(booking.getBookingdates().getCheckout())
+                .isEqualTo(created.getBooking().getBookingdates().getCheckout());
 
 
-        assertThat(booking.additionalneeds)
-                .isEqualTo(created.booking.additionalneeds);
+        assertThat(booking.getAdditionalneeds())
+                .isEqualTo(created.getBooking().getAdditionalneeds());
     }
 
 
@@ -140,21 +145,23 @@ public class BookingTests extends BaseTest {
     @Test
     void createBooking200() throws Exception {
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
-        assertThat(created.bookingid).isPositive();
-        assertThat(created.booking.firstname).isEqualTo("Vlad");
-        assertThat(created.booking.lastname).isEqualTo("Tretyakov");
+        assertThat(created.getBookingid()).isPositive();
+        assertThat(created.getBooking().getFirstname()).isEqualTo("Vlad");
+        assertThat(created.getBooking().getLastname()).isEqualTo("Tretyakov");
     }
 
     @Test
     void createBookingNullFirstname() throws Exception {
 
+        BookingData BookingData = new BookingData();
         CreateUpdateRequest body =
                 BookingData.defaultBooking();
 
-        body.firstname = null;
+        body.setFirstname(null);
 
         Response<CreateResponse> response =
                 api.createBooking(
@@ -168,14 +175,14 @@ public class BookingTests extends BaseTest {
     @Test
     void createBookingWrongDate() throws Exception {
 
+        BookingData BookingData = new BookingData();
         CreateUpdateRequest body =
                 BookingData.defaultBooking();
 
-        body.bookingdates =
-                new BookingDates(
-                        "10-05-2024",
-                        "01-09-2024"
-                );
+        body.setBookingdates(new BookingDates(
+                "10-05-2024",
+                "01-09-2024"
+        ));
 
         Response<CreateResponse> response =
                 api.createBooking(
@@ -189,14 +196,14 @@ public class BookingTests extends BaseTest {
     @Test
     void createBookingCheckoutBeforeCheckin() throws Exception {
 
+        BookingData BookingData = new BookingData();
         CreateUpdateRequest body =
                 BookingData.defaultBooking();
 
-        body.bookingdates =
-                new BookingDates(
-                        "2024-09-01",
-                        "2024-05-10"
-                );
+        body.setBookingdates(new BookingDates(
+                "2024-09-01",
+                "2024-05-10"
+        ));
 
         Response<CreateResponse> response =
                 api.createBooking(
@@ -210,10 +217,11 @@ public class BookingTests extends BaseTest {
     @Test
     void createBookingNegativePrice() throws Exception {
 
+        BookingData BookingData = new BookingData();
         CreateUpdateRequest body =
                 BookingData.defaultBooking();
 
-        body.totalprice = -100;
+        body.setTotalprice(-100);
 
         Response<CreateResponse> response =
                 api.createBooking(
@@ -228,8 +236,9 @@ public class BookingTests extends BaseTest {
     @Test
     void update200Token() throws Exception {
 
-        String token = createToken(LOGIN, PASS).body().token;
+        String token = createToken(LOGIN, PASS).body().getToken();
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -241,40 +250,41 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         "token=" + token,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body()).isNotNull();
 
-        assertThat(response.body().firstname)
-                .isEqualTo(body.firstname);
+        assertThat(response.body().getFirstname())
+                .isEqualTo(body.getFirstname());
 
-        assertThat(response.body().lastname)
-                .isEqualTo(body.lastname);
+        assertThat(response.body().getLastname())
+                .isEqualTo(body.getLastname());
 
-        assertThat(response.body().totalprice)
-                .isEqualTo(body.totalprice);
+        assertThat(response.body().getTotalprice())
+                .isEqualTo(body.getTotalprice());
 
-        assertThat(response.body().depositpaid)
-                .isEqualTo(body.depositpaid);
+        assertThat(response.body().getDepositpaid())
+                .isEqualTo(body.getDepositpaid());
 
-        assertThat(response.body().bookingdates.checkin)
-                .isEqualTo(body.bookingdates.checkin);
+        assertThat(response.body().getBookingdates().getCheckin())
+                .isEqualTo(body.getBookingdates().getCheckin());
 
-        assertThat(response.body().bookingdates.checkout)
-                .isEqualTo(body.bookingdates.checkout);
+        assertThat(response.body().getBookingdates().getCheckout())
+                .isEqualTo(body.getBookingdates().getCheckout());
 
-        assertThat(response.body().additionalneeds)
-                .isEqualTo(body.additionalneeds);
+        assertThat(response.body().getAdditionalneeds())
+                .isEqualTo(body.getAdditionalneeds());
 
     }
 
     @Test
     void updateWrongPass403Token() throws Exception {
 
-        String token = createToken(LOGIN, WRONG).body().token;
+        String token = createToken(LOGIN, WRONG).body().getToken();
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -286,7 +296,7 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         "token=" + token,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -296,8 +306,9 @@ public class BookingTests extends BaseTest {
     @Test
     void updateWrongLogin403Token() throws Exception {
 
-        String token = createToken(WRONG, PASS).body().token;
+        String token = createToken(WRONG, PASS).body().getToken();
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -309,7 +320,7 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         "token=" + token,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -319,6 +330,7 @@ public class BookingTests extends BaseTest {
     @Test
     void updateNoneAuth403Token() throws Exception {
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -330,7 +342,7 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         null,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -343,6 +355,7 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN, PASS);
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -354,32 +367,32 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         auth,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body()).isNotNull();
 
-        assertThat(response.body().firstname)
-                .isEqualTo(body.firstname);
+        assertThat(response.body().getFirstname())
+                .isEqualTo(body.getFirstname());
 
-        assertThat(response.body().lastname)
-                .isEqualTo(body.lastname);
+        assertThat(response.body().getLastname())
+                .isEqualTo(body.getLastname());
 
-        assertThat(response.body().totalprice)
-                .isEqualTo(body.totalprice);
+        assertThat(response.body().getTotalprice())
+                .isEqualTo(body.getTotalprice());
 
-        assertThat(response.body().depositpaid)
-                .isEqualTo(body.depositpaid);
+        assertThat(response.body().getDepositpaid())
+                .isEqualTo(body.getDepositpaid());
 
-        assertThat(response.body().bookingdates.checkin)
-                .isEqualTo(body.bookingdates.checkin);
+        assertThat(response.body().getBookingdates().getCheckin())
+                .isEqualTo(body.getBookingdates().getCheckin());
 
-        assertThat(response.body().bookingdates.checkout)
-                .isEqualTo(body.bookingdates.checkout);
+        assertThat(response.body().getBookingdates().getCheckout())
+                .isEqualTo(body.getBookingdates().getCheckout());
 
-        assertThat(response.body().additionalneeds)
-                .isEqualTo(body.additionalneeds);
+        assertThat(response.body().getAdditionalneeds())
+                .isEqualTo(body.getAdditionalneeds());
     }
 
     @Test
@@ -388,6 +401,7 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN, WRONG);
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -399,7 +413,7 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         auth,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -412,6 +426,7 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(WRONG, PASS);
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -423,7 +438,7 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         auth,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -433,6 +448,7 @@ public class BookingTests extends BaseTest {
     @Test
     void updateNoneAuth403Auth() throws Exception {
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -444,7 +460,7 @@ public class BookingTests extends BaseTest {
                         CONTENT_TYPE,
                         ACCEPT,
                         null,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -454,8 +470,9 @@ public class BookingTests extends BaseTest {
     @Test
     void updateWrongID405Token() throws Exception {
 
-        String token = createToken(LOGIN, PASS).body().token;
+        String token = createToken(LOGIN, PASS).body().getToken();
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -480,6 +497,7 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN,PASS);
 
+        BookingData BookingData = new BookingData();
         CreateUpdateRequest body =
                 BookingData.updateBooking();
 
@@ -499,51 +517,53 @@ public class BookingTests extends BaseTest {
     @Test
     void partialUpdate200Token() throws Exception {
 
-        String token = createToken(LOGIN, PASS).body().token;
+        String token = createToken(LOGIN, PASS).body().getToken();
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
-        body.lastname = "UpdatedLast";
+        body.setFirstname("UpdatedFirst");
+        body.setLastname("UpdatedLast");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingToken(
                         CONTENT_TYPE,
                         ACCEPT,
                         "token=" + token,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body()).isNotNull();
 
-        assertThat(response.body().firstname)
-                .isEqualTo(body.firstname);
+        assertThat(response.body().getFirstname())
+                .isEqualTo(body.getFirstname());
 
-        assertThat(response.body().lastname)
-                .isEqualTo(body.lastname);
+        assertThat(response.body().getLastname())
+                .isEqualTo(body.getLastname());
     }
 
     @Test
     void partialUpdateWrongPass403Token() throws Exception {
 
-        String token = createToken(LOGIN, WRONG).body().token;
+        String token = createToken(LOGIN, WRONG).body().getToken();
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
-        body.lastname = "UpdatedLast";
+        body.setFirstname("UpdatedFirst");
+        body.setLastname("UpdatedLast");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingToken(
                         CONTENT_TYPE,
                         ACCEPT,
                         "token=" + token,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -553,19 +573,21 @@ public class BookingTests extends BaseTest {
     @Test
     void partialUpdateWrongLogin403Token() throws Exception {
 
-        String token = createToken(WRONG, PASS).body().token;
+        String token = createToken(WRONG, PASS).body().getToken();
+
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
+        body.setFirstname("UpdatedFirst");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingToken(
                         CONTENT_TYPE,
                         ACCEPT,
                         "token=" + token,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -575,18 +597,19 @@ public class BookingTests extends BaseTest {
     @Test
     void partialUpdateNoneAuth403Token() throws Exception {
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
+        body.setFirstname("UpdatedFirst");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingToken(
                         CONTENT_TYPE,
                         ACCEPT,
                         null,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -599,29 +622,30 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN, PASS);
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
-        body.lastname = "UpdatedLast";
+        body.setFirstname("UpdatedFirst");
+        body.setLastname("UpdatedLast");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingAuth(
                         CONTENT_TYPE,
                         ACCEPT,
                         auth,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body()).isNotNull();
 
-        assertThat(response.body().firstname)
-                .isEqualTo(body.firstname);
+        assertThat(response.body().getFirstname())
+                .isEqualTo(body.getFirstname());
 
-        assertThat(response.body().lastname)
-                .isEqualTo(body.lastname);
+        assertThat(response.body().getLastname())
+                .isEqualTo(body.getLastname());
 
     }
 
@@ -631,18 +655,19 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN, WRONG);
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
+        body.setFirstname("UpdatedFirst");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingAuth(
                         CONTENT_TYPE,
                         ACCEPT,
                         auth,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -655,18 +680,19 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(WRONG, PASS);
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
+        body.setFirstname("UpdatedFirst");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingAuth(
                         CONTENT_TYPE,
                         ACCEPT,
                         auth,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -676,18 +702,19 @@ public class BookingTests extends BaseTest {
     @Test
     void partialUpdateNoneAuth403Auth() throws Exception {
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
+        body.setFirstname("UpdatedFirst");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingAuth(
                         CONTENT_TYPE,
                         ACCEPT,
                         null,
-                        created.bookingid,
+                        created.getBookingid(),
                         body).execute();
 
         assertThat(response.code()).isEqualTo(403);
@@ -697,13 +724,14 @@ public class BookingTests extends BaseTest {
     @Test
     void partialUpdateWrongID405Token() throws Exception {
 
-        String token = createToken(LOGIN, PASS).body().token;
+        String token = createToken(LOGIN, PASS).body().getToken();
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
+        body.setFirstname("UpdatedFirst");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingToken(
@@ -724,7 +752,7 @@ public class BookingTests extends BaseTest {
                 Credentials.basic(LOGIN,PASS);
 
         PartialUpdateRequest body = new PartialUpdateRequest();
-        body.firstname = "UpdatedFirst";
+        body.setFirstname("UpdatedFirst");
 
         Response<BookingResponse> response =
                 api.partialUpdateBookingAuth(
@@ -742,19 +770,20 @@ public class BookingTests extends BaseTest {
     @Test
     void delete200Token() throws Exception {
 
-        String token = createToken(LOGIN, PASS).body().token;
+        String token = createToken(LOGIN, PASS).body().getToken();
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         Response<ResponseBody> response =
-                api.deleteBookingToken("token=" + token, created.bookingid).execute();
+                api.deleteBookingToken("token=" + token, created.getBookingid()).execute();
         assertThat(response.code()).isEqualTo(201);
 
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(404);
@@ -763,19 +792,20 @@ public class BookingTests extends BaseTest {
     @Test
     void delete403WrongPassToken() throws Exception {
 
-        String token = createToken(LOGIN, WRONG).body().token;
+        String token = createToken(LOGIN, WRONG).body().getToken();
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
         Response<ResponseBody> response =
-                api.deleteBookingToken("token=" + token, created.bookingid).execute();
+                api.deleteBookingToken("token=" + token, created.getBookingid()).execute();
         assertThat(response.code()).isEqualTo(403);
 
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(200);
@@ -784,19 +814,20 @@ public class BookingTests extends BaseTest {
     @Test
     void delete403WrongLoginToken() throws Exception {
 
-        String token = createToken(WRONG, PASS).body().token;
+        String token = createToken(WRONG, PASS).body().getToken();
 
+        BookingData bookingData = new BookingData();
         CreateResponse created =
-                create(BookingData.defaultBooking());
+                create(bookingData.defaultBooking());
 
         Response<ResponseBody> response =
-                api.deleteBookingToken("token=" + token, created.bookingid).execute();
+                api.deleteBookingToken("token=" + token, created.getBookingid()).execute();
         assertThat(response.code()).isEqualTo(403);
 
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(200);
@@ -805,8 +836,9 @@ public class BookingTests extends BaseTest {
     @Test
     void delete404WrongIDToken() throws Exception {
 
-        String token = createToken(LOGIN, PASS).body().token;
+        String token = createToken(LOGIN, PASS).body().getToken();
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -817,7 +849,7 @@ public class BookingTests extends BaseTest {
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(200);
@@ -829,17 +861,18 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN,PASS);
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
         Response<ResponseBody> response =
-                api.deleteBookingAuth(auth, created.bookingid).execute();
+                api.deleteBookingAuth(auth, created.getBookingid()).execute();
         assertThat(response.code()).isEqualTo(201);
 
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(404);
@@ -851,17 +884,18 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN,WRONG);
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
         Response<ResponseBody> response =
-                api.deleteBookingAuth(auth, created.bookingid).execute();
+                api.deleteBookingAuth(auth, created.getBookingid()).execute();
         assertThat(response.code()).isEqualTo(403);
 
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(200);
@@ -873,17 +907,18 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(WRONG,PASS);
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
         Response<ResponseBody> response =
-                api.deleteBookingAuth(auth, created.bookingid).execute();
+                api.deleteBookingAuth(auth, created.getBookingid()).execute();
         assertThat(response.code()).isEqualTo(403);
 
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(200);
@@ -895,6 +930,7 @@ public class BookingTests extends BaseTest {
         String auth =
                 Credentials.basic(LOGIN,PASS);
 
+        BookingData BookingData = new BookingData();
         CreateResponse created =
                 create(BookingData.defaultBooking());
 
@@ -905,7 +941,7 @@ public class BookingTests extends BaseTest {
         Response<BookingResponse> get =
                 api.getBooking(
                         ACCEPT,
-                        created.bookingid
+                        created.getBookingid()
                 ).execute();
 
         assertThat(get.code()).isEqualTo(200);

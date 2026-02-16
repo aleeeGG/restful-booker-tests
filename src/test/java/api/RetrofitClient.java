@@ -1,35 +1,24 @@
 package api;
 
+import config.TestConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.aeonbits.owner.ConfigFactory;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import java.io.InputStream;
-import java.util.Properties;
-
 public class RetrofitClient {
 
-    private static final Properties props = new Properties();
+    private static final TestConfig config =
+            ConfigFactory.create(TestConfig.class);
 
-    static {
-        try (InputStream is = RetrofitClient.class
-                .getClassLoader()
-                .getResourceAsStream("application.properties")) {
-            props.load(is);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static <T> T getClient(Class<T> apiClass) {
 
-    public static ReqresApi api() {
         HttpLoggingInterceptor logging =
                 new HttpLoggingInterceptor();
 
-        logging.setLevel(
-                HttpLoggingInterceptor.Level.BODY
-        );
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(logging)
@@ -39,15 +28,14 @@ public class RetrofitClient {
                             .build();
                     return chain.proceed(request);
                 })
-
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(props.getProperty("base.url"))
+                .baseUrl(config.baseUrl())
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        return retrofit.create(ReqresApi.class);
+        return retrofit.create(apiClass);
     }
 }

@@ -1,5 +1,9 @@
 package model.booking;
 
 public class GetBookingIDsResponse {
-    public int bookingid;
+    private Integer bookingid;
+
+    public Integer getBookingid() {
+        return bookingid;
+    }
 }

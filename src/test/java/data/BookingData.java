@@ -5,7 +5,7 @@ import model.booking.CreateUpdateRequest;
 
 public class BookingData {
 
-    public static CreateUpdateRequest defaultBooking() {
+    public CreateUpdateRequest defaultBooking() {
 
         BookingDates dates =
                 new BookingDates(
@@ -23,7 +23,7 @@ public class BookingData {
         );
     }
 
-    public static CreateUpdateRequest updateBooking() {
+    public CreateUpdateRequest updateBooking() {
 
         BookingDates dates =
                 new BookingDates(

@@ -19,7 +19,7 @@ public class AuthTests extends BaseTest {
 
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body()).isNotNull();
-        assertThat(response.body().token).isNotBlank();
+        assertThat(response.body().getToken()).isNotBlank();
     }
 
 
@@ -31,7 +31,7 @@ public class AuthTests extends BaseTest {
 
         assertThat(response.code()).isEqualTo(200); /// возвращает 200 должно 401
         assertThat(response.body()).isNotNull();
-        assertThat(response.body().reason).isEqualTo("Bad credentials");
+        assertThat(response.body().getReason()).isEqualTo("Bad credentials");
     }
 
     @Test
@@ -42,6 +42,6 @@ public class AuthTests extends BaseTest {
 
         assertThat(response.code()).isEqualTo(200); /// возвращает 200 должно 401
         assertThat(response.body()).isNotNull();
-        assertThat(response.body().reason).isEqualTo("Bad credentials");
+        assertThat(response.body().getReason()).isEqualTo("Bad credentials");
     }
 }

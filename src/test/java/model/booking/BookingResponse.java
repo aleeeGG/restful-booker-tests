@@ -2,11 +2,34 @@ package model.booking;
 
 public class BookingResponse {
 
-    public String firstname;
-    public String lastname;
-    public int totalprice;
-    public boolean depositpaid;
-    public BookingDates bookingdates;
-    public String additionalneeds;
+    private String firstname;
+    private String lastname;
+    private Integer totalprice;
+    private Boolean depositpaid;
+    private BookingDates bookingdates;
+    private String additionalneeds;
 
+    public String getFirstname(){
+        return firstname;
+    }
+
+    public String getLastname(){
+        return lastname;
+    }
+
+    public Integer getTotalprice() {
+        return totalprice;
+    }
+
+    public Boolean getDepositpaid() {
+        return depositpaid;
+    }
+
+    public BookingDates getBookingdates() {
+        return bookingdates;
+    }
+
+    public String getAdditionalneeds() {
+        return additionalneeds;
+    }
 }

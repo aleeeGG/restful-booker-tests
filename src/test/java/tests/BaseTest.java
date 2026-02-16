@@ -1,8 +1,9 @@
 package tests;
 
-import api.ReqresApi;
+import api.RestfulBookerApi;
 import api.RetrofitClient;
 
+import config.TestConfig;
 import model.auth.AuthRequest;
 import model.auth.AuthResponse;
 import model.booking.BookingResponse;
@@ -10,6 +11,7 @@ import model.booking.CreateUpdateRequest;
 import model.booking.CreateResponse;
 
 import model.booking.GetBookingIDsResponse;
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.jupiter.api.BeforeEach;
 import retrofit2.Response;
 
@@ -19,11 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class BaseTest {
 
-    protected ReqresApi api;
+    protected RestfulBookerApi api;
 
     @BeforeEach
     void setUp() {
-        api = RetrofitClient.api();
+        api = RetrofitClient.getClient(RestfulBookerApi.class);
     }
 
     protected BookingResponse getBookingById(int id) throws Exception {
@@ -70,4 +72,8 @@ public abstract class BaseTest {
 
         return api.getBookingIDs(firstname, lastname, checkin, checkout).execute();
     }
+
+    protected static final TestConfig config =
+            ConfigFactory.create(TestConfig.class);
+
 }

@@ -9,7 +9,7 @@ import retrofit2.http.*;
 
 import java.util.List;
 
-public interface ReqresApi {
+public interface RestfulBookerApi {
 
     ///Auth
     @POST("auth")

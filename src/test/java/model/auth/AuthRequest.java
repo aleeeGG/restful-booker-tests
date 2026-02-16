@@ -1,8 +1,9 @@
 package model.auth;
 
 public class AuthRequest {
-    public String username;
-    public String password;
+
+    private String username;
+    private String password;
 
     public AuthRequest(String username, String password) {
         this.username = username;

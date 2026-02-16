@@ -2,7 +2,14 @@ package model.booking;
 
 public class CreateResponse {
 
-    public int bookingid;
-    public BookingResponse booking;
+    private Integer bookingid;
+    private BookingResponse booking;
 
+    public Integer getBookingid() {
+        return bookingid;
+    }
+
+    public BookingResponse getBooking() {
+        return booking;
+    }
 }

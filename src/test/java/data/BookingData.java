@@ -7,37 +7,35 @@ public class BookingData {
 
     public CreateUpdateRequest defaultBooking() {
 
-        BookingDates dates =
-                new BookingDates(
-                        "2024-05-10",
-                        "2024-09-01"
-                );
+        BookingDates dates = BookingDates.builder()
+                .checkin("2024-05-10")
+                .checkout("2024-09-01")
+                .build();
 
-        return new CreateUpdateRequest(
-                "Vlad",
-                "Tretyakov",
-                111,
-                true,
-                dates,
-                "Breakfast"
-        );
+        return CreateUpdateRequest.builder()
+                .firstname("Vlad")
+                .lastname("Tretyakov")
+                .totalprice(111)
+                .depositpaid(true)
+                .bookingdates(dates)
+                .additionalneeds("Breakfast")
+                .build();
     }
 
     public CreateUpdateRequest updateBooking() {
 
-        BookingDates dates =
-                new BookingDates(
-                        "2024-06-28",
-                        "2024-07-11"
-                );
+        BookingDates dates = BookingDates.builder()
+                .checkin("2024-06-28")
+                .checkout("2024-07-11")
+                .build();
 
-        return new CreateUpdateRequest(
-                "Aleg",
-                "Smirnov",
-                222,
-                false,
-                dates,
-                "Breakfast"
-        );
+        return CreateUpdateRequest.builder()
+                .firstname("Aleg")
+                .lastname("Smirnov")
+                .totalprice(222)
+                .depositpaid(false)
+                .bookingdates(dates)
+                .additionalneeds("Breakfast")
+                .build();
     }
 }

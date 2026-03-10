@@ -1,17 +1,21 @@
 package tests;
 
-import model.auth.AuthRequest;
-import model.auth.AuthResponse;
-import model.booking.GetBookingIDsResponse;
+import api.RestfulBookerApi;
+import api.RetrofitClient;
 import okhttp3.ResponseBody;
 import org.junit.jupiter.api.Test;
 import retrofit2.Response;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PingTests extends BaseTest{
+
+    private final RestfulBookerApi api =
+            RetrofitClient.getClient(
+                    RestfulBookerApi.class,
+                    config.baseUrl()
+            );
+
     @Test
     void Ping200() throws Exception {
 

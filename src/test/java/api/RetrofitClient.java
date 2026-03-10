@@ -10,10 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    private static final TestConfig config =
-            ConfigFactory.create(TestConfig.class);
-
-    public static <T> T getClient(Class<T> apiClass) {
+    public static <T> T getClient(Class<T> apiClass, String baseUrl) {
 
         HttpLoggingInterceptor logging =
                 new HttpLoggingInterceptor();
@@ -31,7 +28,7 @@ public class RetrofitClient {
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(config.baseUrl())
+                .baseUrl(baseUrl)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
